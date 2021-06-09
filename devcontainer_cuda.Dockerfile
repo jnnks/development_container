@@ -1,5 +1,5 @@
-FROM ubuntu:20.04
-RUN apt-get update
+FROM tensorflow/tensorflow:latest-gpu
+
 
 
 # ---- add container user
@@ -20,16 +20,18 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes --no-
        software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa \
     && DEBIAN_FRONTEND=noninteractive apt-get update \
-    && apt-get install --yes --no-install-recommends \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
        python3.8 python3-pip \
-    && ln -sf /usr/bin/python3.8 /usr/bin/python3 \
-    && /usr/bin/python3 -m pip install --upgrade pip
+    && /usr/bin/python3.8 -m pip install --upgrade pip
 
 
 # ---- install fish
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes --no-install-recommends \
-       fish curl \
-    && rm -rf /var/lib/apt/lists/*
+       software-properties-common \
+    && apt-add-repository ppa:fish-shell/release-3 \
+    && DEBIAN_FRONTEND=noninteractive apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
+       fish curl
 RUN mkdir -p /home/$USERNAME/.config/fish/functions/
 
 # custom terminal prompt
@@ -42,7 +44,7 @@ RUN TARGET=/home/$USERNAME/.config/fish/functions/fish_prompt.fish \
 RUN TARGET=/home/$USERNAME/.config/fish/functions/cht.fish \
     && echo "function cht -d 'use cheat.sh'"    >> $TARGET \
     && echo "    curl cheat.sh/\$argv"          >> $TARGET \
-    && echo "end"                                 >> $TARGET
+    && echo "end"                               >> $TARGET
 
 # make sure that user can write all fish configs
 RUN chown -R $USERNAME /home/$USERNAME/.config
